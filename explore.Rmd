@@ -1,0 +1,156 @@
+---
+title: Explore
+author: Andy Choens
+output: html_document
+---
+
+```{r setup, include = FALSE}
+pacman::p_load(knitr, rio, tidyverse)
+baby_names <- import("data/baby_names.rds")
+census_regions <- import("data/census_regions.rds")
+
+## Placeholder for joins
+
+```
+
+
+
+# Data Exploration
+
+## Do we have all the states/years?
+
+- State: All
+- Year: Min/Max
+- Sex: All
+- Names: How many unique
+
+```{r echo=FALSE}
+baby_names |> 
+  group_by(state_code) |>
+  summarize(
+    first_yob = min(yob),
+    last_yob = max(yob),
+    unique_names = length(unique(name))
+  ) |> 
+  kable()
+```
+
+
+```{r problems, echo=FALSE, results = 'asis'}
+problems <- 
+  baby_names |> 
+  group_by(state_code) |>
+  summarize(
+    first_yob = min(yob),
+    last_yob = max(yob),
+    unique_names = length(unique(name))
+  ) %>%
+  filter(first_yob != 1910 | last_yob != 2021)
+
+if (nrow(problems) > 0) {
+  cat("## Problems:")
+  cat("\n\n")
+  cat("The following rows have problems:")
+  cat("\n\n")
+  problems |> kable()
+}
+```
+
+## The Last Homer
+
+When was the last year there was someone named Homer born in Oregon?
+
+```{r}
+baby_names |>
+  filter(state_code == "OR", name == "Homer") |>
+  arrange(desc(yob)) |>
+  top_n(2) |>
+  kable()
+```
+
+## New York State Popular Names (2021)
+
+- State: New York
+- Year: 2021
+- Sex: Male
+- Names: 10 most popular
+
+```{r echo=FALSE}
+baby_names |>
+  filter(state_code == "NY", yob == 2021,  sex == "M") |>
+  arrange(desc(n_occurrences)) |>
+  top_n(10) |>
+  kable()
+```
+
+Make a bar plot of the top 25 most popular names in New York in 2021 and show the differences in the counts!
+
+```{r}
+baby_names |>
+  filter(state_code == "NY", yob == 2021,  sex == "M") |>
+  arrange(desc(n_occurrences)) |>
+  top_n(25) |>
+  ggplot(aes(x = n_occurrences, y = name)) +
+  geom_col() +
+  labs(title = "Most Popular Male Names in New York, 2021")+
+  xlab("Count") +
+  ylab("Name")
+```
+
+
+
+# Gender Changes
+
+## Charlie - What a guy?
+
+- Charlie Brown is one of the most famous Charlie's of all time.
+- Traditionally male name.
+- What percent of Charlies born in the US in 2021 were female?
+- Name: Charlie
+- Year: 2021
+- Sex: What percent is female?
+
+```{r}
+baby_names |>
+  filter(yob == 2021, name == "Charlie") |>
+  group_by(sex) |>
+  summarize(n = sum(n_occurrences)) |>
+  pivot_wider(names_from = sex, values_from = n) |>
+  mutate(Total = F+M) %>%
+  select("Female" = F, "Male" = M, Total = Total) |>
+  mutate("Percent Female" = round(100*Female/Total,1))
+```
+
+Can we plot the change in Charlie over time?
+
+```{r}
+
+```
+
+## Names that went from Male to Female
+
+- What names were 90% or more male prior to 1950 which have become more than 50% female in the past 10 years?
+- Year: 
+
+
+
+# Exploring Regional Differences
+
+We will do this Friday. If you have not yet done so, PLEASE PLEASE PLEASE review the reading.
+
+## Northeast Popular Names (2021)
+
+- Region: Northeast
+- Year: 2021
+- Sex: Male
+- Names: 10 most popular
+
+```{r}
+
+```
+
+
+
+# Challenge!
+
+We'll come up with some challenges together to further explore this data on Friday.
